@@ -40,12 +40,14 @@ namespace dibella {
       res.first.second  = arg1.first.second;
       res.second.second = arg2.first.second;
 
+      // std::cout << "miao" << std::endl;
+
       return res;
   #else
       OUT res(arg1.count);
       res.pos = arg1.pos;
 
-      std::vector<std::pair<PosInRead, PosInRead>> kmertobeinserted; //(arg1->pos.size()); GGGG: techinically i don't need size
+      std::vector<std::pair<PosInRead, PosInRead>> kmertobeinserted; //(arcdg1->pos.size()); GGGG: techinically i don't need size
 
       for(int i = 0; i < arg2.pos.size(); ++i)	
         for(int j = 0; j < arg1.pos.size(); ++j)

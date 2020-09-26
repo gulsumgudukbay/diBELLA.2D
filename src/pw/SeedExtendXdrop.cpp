@@ -2,7 +2,11 @@
 
 #include "../../include/pw/SeedExtendXdrop.hpp"
 
-void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, bool& passed, float& ratioScoreOverlap, uint32_t& overhang, uint32_t& overlap)
+#ifdef EXTRA
+void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, ushort& passed, float& ratioScoreOverlap, uint32_t& overhang, uint32_t& overlap)
+#else
+void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, ushort& passed, float& ratioScoreOverlap, uint32_t& overhang)
+#endif
 {
 	auto maxseed = ai.seed;	// returns a seqan:Seed object
 
@@ -22,7 +26,11 @@ void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, bool& passed, f
 	unsigned short int minLeft  = min(begpV, begpH);
 	unsigned short int minRight = min(rlenV - endpV, rlenH - endpH);
 
+#ifdef EXTRA
 	overlap = minLeft + minRight + (overlapLenV + overlapLenH) / 2;
+#else
+	int overlap = minLeft + minRight + (overlapLenV + overlapLenH) / 2;
+#endif
 
 	// unsigned short int normLen  = max(overlapLenV, overlapLenH);
 	// unsigned short int minLen   = min(overlapLenV, overlapLenH);
@@ -66,7 +74,7 @@ void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, bool& passed, f
 			* If ReadV is exiting from ReadH and not reverse complement, we assign directionality “10” 
 			* If ReadV is exiting from ReadH and reverse complement, we assign directionality “11” 
 		*/
-		passed = true;
+		passed = 1; // 1 means true (it did pass the alignment)
 		uint32_t direction;
 		uint32_t suffix;
 
@@ -116,7 +124,7 @@ void SeedExtendXdrop::PostAlignDecision(const AlignmentInfo& ai, bool& passed, f
 		
 #else
 	if(ai.xscore >= FIXEDTHR)
-		passed = true;
+		passed = 1; // 1 means true (it did pass the alignment)
 #endif
 }
 
@@ -440,7 +448,7 @@ SeedExtendXdrop::apply_batch
 									  scoring_scheme);
 			#endif
 				ai[i].xscore = xscores[i];
-				ai[i].rc = strands[i];
+				ai[i].rc     = strands[i];
 				ai[i].seed   =   seeds[i];
 
 				ai[i].seq_h_length = seqan::length(seqan::source(seqsh[i]));
@@ -455,7 +463,7 @@ SeedExtendXdrop::apply_batch
 		}
 		else
 		{
-		#pragma omp parallel for
+			#pragma omp parallel for
 			for (uint64_t i = 0; i < npairs; ++i)
 			{
 			#ifdef STATS
@@ -499,12 +507,16 @@ SeedExtendXdrop::apply_batch
 		for (uint64_t i = 0; i < npairs; ++i)
 		{
 			// Only keep alignments that meet BELLA criteria
-			bool passed = false;
-
 			dibella::CommonKmers *cks = std::get<2>(mattuples[lids[i]]);
-			PostAlignDecision(ai[i], passed, ratioScoreOverlap, cks->overhang, cks->overlap);
-	
-			if (passed)
+			cks->passed = 2; // 2 means false (it didn't pass the alignment)
+
+		#ifdef EXTRA
+			PostAlignDecision(ai[i], cks->passed, ratioScoreOverlap, cks->overhang, cks->overlap);
+		#else
+			PostAlignDecision(ai[i], cks->passed, ratioScoreOverlap, cks->overhang);
+		#endif
+
+			if (cks->passed == 1)
 			{
 				// GGGG: store updated seed start/end position in the CommonKmers pairs (the semantics of these pairs change wrt the original semantics but that's okay)
 				cks->first.first   = beginPositionV(ai[i].seed); 	// start on vertical sequence
@@ -512,10 +524,11 @@ SeedExtendXdrop::apply_batch
 				cks->second.first  = beginPositionH(ai[i].seed);	// start on horizonal sequence
 				cks->second.second = endPositionH(ai[i].seed);		// end on horizonal sequence
 
+			#ifdef EXTRA
 				cks->lenv 	= ai[i].seq_v_length;
 				cks->lenh 	= ai[i].seq_h_length;
+			#endif
 				cks->score  = ai[i].xscore;
-				cks->passed = passed;	// keep this
 			}
 		}
 	}

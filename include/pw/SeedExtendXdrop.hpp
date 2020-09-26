@@ -13,8 +13,13 @@ public:
   SeedExtendXdrop(ScoringScheme scoring_scheme,
                   ushort seed_length, int xdrop, int seed_count);
 
+#ifdef EXTRA
   void
-  PostAlignDecision(const AlignmentInfo& ai, bool& passed, float& ratioScoreOveralap, uint32_t& overhang, uint32_t& overlap);
+  PostAlignDecision(const AlignmentInfo& ai, ushort& passed, float& ratioScoreOveralap, uint32_t& overhang, uint32_t& overlap);
+#else
+  void
+  PostAlignDecision(const AlignmentInfo& ai, ushort& passed, float& ratioScoreOveralap, uint32_t& overhang);
+#endif
 
   void
   apply(uint64_t l_col_idx, uint64_t g_col_idx,

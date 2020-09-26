@@ -215,7 +215,7 @@ DistributedPairwiseRunner::run_batch
 	int myrank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-	int			batch_size		= 5e5; // @GGGG: play with this value if program goes OOM (it could be an input parameter)
+	int			batch_size		= 1e6; // @GGGG: play with this value if program goes OOM (it could be an input parameter)
 	int			batch_cnt		= (local_nnz_count / batch_size) + 1;
 	int			batch_idx		= 0;
 	uint64_t	nalignments		= 0;
@@ -240,7 +240,6 @@ DistributedPairwiseRunner::run_batch
 	}
 
 	assert (z == local_nnz_count);
-		
 	lfs << "Local nnz count: " << local_nnz_count << std::endl;
 
 	int numThreads = 1;
@@ -254,11 +253,13 @@ DistributedPairwiseRunner::run_batch
 	uint64_t *algn_cnts   = new uint64_t[numThreads + 1];
 	uint64_t nelims_ckthr = 0; // nelims_alnthr = 0, nelims_both = 0;
 
+	uint64_t beg = 0;
+	uint64_t end = (batch_size > local_nnz_count) ? local_nnz_count : batch_size;
 
 	while (batch_idx < batch_cnt)
 	{
-		uint64_t beg = batch_idx * batch_size;
-		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
+	// 	uint64_t beg = batch_idx * batch_size;
+	// 	uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 
 		tu.print_str("batch idx " + std::to_string(batch_idx) + "/" +
 					 std::to_string(batch_cnt) + " [" +
@@ -373,9 +374,21 @@ DistributedPairwiseRunner::run_batch
 			<< std::endl;
 
 		pf->apply_batch(seqsh, seqsv, lids, col_offset, row_offset, mattuples, lfs, k);
-		
-		delete [] lids;
+
+		uint64_t beforennz = spSeq->getnnz();
+
+		/* GGGG: if(passed == 0) = not computed yet, if(passed == 1) = true, if(passed == 2) = false */
+		auto elim_cov = [] (dibella::CommonKmers &ck) { return ck.passed == 2; };
+		gmat->Prune(elim_cov);
+
+		uint64_t prunednnz = beforennz - spSeq->getnnz();
+
 		++batch_idx;
+
+		beg = end - prunednnz;
+		end = ((beg + batch_size) > local_nnz_count) ? local_nnz_count : (beg + batch_size);
+
+		delete [] lids;
 	}
 
 	pf->nalignments = nalignments;
@@ -401,8 +414,8 @@ DistributedPairwiseRunner::run_batch
 				 std::to_string(nelims_ckthr_tot) + "\n");
 
 	// Prune pairs that do not meet coverage criteria
-	auto elim_cov = [] (dibella::CommonKmers &ck) { return ck.passed == false; };
-	gmat->Prune(elim_cov);
+	// auto elim_cov = [] (dibella::CommonKmers &ck) { if(ck.passed != 2) return true; };
+	// gmat->Prune(elim_cov);
 	
 	double start = MPI_Wtime();
 	gmat->ParallelWriteMM(aln_file, true, dibella::CkOutputHandler());

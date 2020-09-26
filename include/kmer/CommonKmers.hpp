@@ -7,7 +7,7 @@
 #include "../Defines.hpp"
 
 // GGGG: needed for benchmarking
-#define EXTRA
+// #define EXTRA
 
 namespace dibella {
   struct CommonKmers {
@@ -19,7 +19,8 @@ namespace dibella {
      */
     ushort count;
 
-	bool passed;
+	/* GGGG: 0 = not computed yet, 1 = true, 2 = false */
+	ushort passed; 
 
 	uint32_t score; /* Used for storing alignment score */
 	
@@ -46,11 +47,11 @@ namespace dibella {
 	std::vector<std::pair<PosInRead, PosInRead>> pos;
 #endif
 
-    CommonKmers() : count(1), passed(false), overhang(0) {
+    CommonKmers() : count(1), passed(0), overhang(0) {
     }
     explicit
 	CommonKmers(ushort count) : 
-		count(count), passed(false), overhang(0) {
+		count(count), passed(0), overhang(0) {
     }
 
 	CommonKmers (bool passed, uint32_t score) :

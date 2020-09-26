@@ -125,14 +125,16 @@ FullAligner::apply_batch
 			int len_seqh = seqan::length(seqan::source(seqsh[i]));
 			int len_seqv = seqan::length(seqan::source(seqsv[i]));
 
+			dibella::CommonKmers *cks = std::get<2>(mattuples[lids[i]]);
+			cks->passed = 2;
+
 			// only keep alignments that meet coverage and ani criteria
 			if (std::max((alen_minus_gapopens / len_seqh),
 						 (alen_minus_gapopens / len_seqv)) >= ratioScoreOverlap &&
 				stats.alignmentIdentity >= debugThr)
 			{
-				dibella::CommonKmers *cks = std::get<2>(mattuples[lids[i]]);
 				cks->score = (float)stats.alignmentIdentity / 100.0f;
-				cks->passed = true;	// keep this
+				cks->passed = 1;	// keep this
 			}
 		}
 	}
