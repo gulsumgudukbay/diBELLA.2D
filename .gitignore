@@ -5,7 +5,9 @@
 *.suo
 *.user
 *.sln.docstates
-
+.vscode
+build_release/
+ecsample30.fa
 # Build results
 
 [Dd]ebug/
