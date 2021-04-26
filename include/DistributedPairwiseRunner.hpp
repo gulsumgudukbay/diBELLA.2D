@@ -12,7 +12,7 @@
 #include "pw/PairwiseFunction.hpp"
 #include "AlignmentInfo.hpp"
 #include "kmer/CommonKmers.hpp"
-
+#include "AllocateStringSet.cu.h"
 class DistributedPairwiseRunner {
 public:
   DistributedPairwiseRunner(std::shared_ptr<DistributedFastaData> dfd,
