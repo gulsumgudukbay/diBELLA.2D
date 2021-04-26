@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(dibella)
 set(CMAKE_CXX_STANDARD 14)
+enable_language(CUDA)
 
 add_subdirectory($ENV{BLOOM_HOME})
 
@@ -22,11 +23,12 @@ else()
   set(libc "")
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fpermissive -w -O3 -DSEQAN_ENABLE_DEBUG=0 -mavx2")
+set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fpermissive -w -O3 -DSEQAN_ENABLE_DEBUG=0 -mavx2 -march=native -mno-avx")
 
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
-
+find_package(CUDA  REQUIRED)
+include_directories("/home/mdl/ypf5071/cuda-8.0/include")
 find_package(ZLIB)
 
 add_executable(dibella
@@ -80,7 +82,8 @@ add_executable(dibella
         include/TransitiveReductionSR.hpp
         include/CC.h
 	)
-
+add_subdirectory(kernels)
+target_link_libraries(dibella PUBLIC  kernels)
 set(LOWER_KMER_FREQ 2
     CACHE STRING "Lower bound for the k-mer frequency")
 

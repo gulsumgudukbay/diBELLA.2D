@@ -5,7 +5,9 @@
 //
 
 #include "../include/DistributedPairwiseRunner.hpp"
+#include "../kernels/count_alignment.cuh"
 #include <atomic> // std::atomic, std::atomic_flag, ATOMIC_FLAG_INIT
+#include <iostream>
 
 DistributedPairwiseRunner::DistributedPairwiseRunner(
     const std::shared_ptr<DistributedFastaData> dfd,
@@ -253,9 +255,42 @@ DistributedPairwiseRunner::run_batch
 
 	uint64_t *algn_cnts   = new uint64_t[numThreads + 1];
 	uint64_t nelims_ckthr = 0; // nelims_alnthr = 0, nelims_both = 0;
+
+
+     uint64_t* mattuples0 = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
+	 uint64_t* mattuples1 = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
+	 uint64_t* cks_count = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
+     uint64_t * align_batch = (uint64_t*)malloc(sizeof(uint64_t)*batch_cnt);
+	uint64_t * elimi_batch = (uint64_t*)malloc(sizeof(uint64_t)*batch_cnt);
+	 for(uint64_t i = 0; i<local_nnz_count;i++)
+	 {
+		 mattuples0[i]=std::get<0>(mattuples[i]);
+		 mattuples1[i]=std::get<1>(mattuples[i]);
+		 cks_count[i] = std::get<2>(mattuples[i])->count;
+	 }
+
+//	test();
+	 /*! Print CUDA start time information */
+
+   ticks_t ts_cuda, te_cuda;
+   ts_cuda = std::chrono::system_clock::now();
+
+    count_alignment_cuda(batch_size, local_nnz_count,mattuples0, mattuples1, cks_count,col_offset,row_offset,
+	ckthr, align_batch, elimi_batch);
+
+   te_cuda = std::chrono::system_clock::now();
+
+   std::string str = "\n CUDA timings:";
+   str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
+   tu.print_str(str);
+
+   ticks_t ts, te;
+   int t_total;
 	
+    ts = std::chrono::system_clock::now();
 	while (batch_idx < batch_cnt) 
 	{
+		
 		uint64_t beg = batch_idx * batch_size;
 		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 
@@ -309,7 +344,8 @@ DistributedPairwiseRunner::run_batch
 
 		nelims_ckthr += nelims_ckthr_cur;	
 
-		for (int i = 1; i < numThreads + 1; ++i) algn_cnts[i] += algn_cnts[i - 1];
+		for (int i = 1; i < numThreads + 1; ++i) 
+			algn_cnts[i] += algn_cnts[i - 1];
 
 		nalignments += algn_cnts[numThreads];
 
@@ -318,7 +354,9 @@ DistributedPairwiseRunner::run_batch
 			++batch_idx;
 			continue;
 		}
-		
+
+
+
 		// allocate StringSet
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsh;
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsv;
@@ -363,6 +401,8 @@ DistributedPairwiseRunner::run_batch
 			}
 		}
 
+		
+
 		// Function call to the aligner
 		lfs << "calling aligner for batch idx " << batch_idx
 			<< " cur #algnments " 				<< algn_cnts[numThreads]
@@ -374,6 +414,12 @@ DistributedPairwiseRunner::run_batch
 		delete [] lids;
 		++batch_idx;
 	}
+
+    te = std::chrono::system_clock::now();
+	str = "\n cpu count alignment timings:";
+  	str.append(std::to_string((ms_t(te - ts)).count())).append(" ms\n");
+  	tu.print_str(str);
+
 
 	if(noAlign) nalignments = 0;
 
