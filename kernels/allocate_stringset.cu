@@ -12,6 +12,7 @@ __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local
 {
     uint64_t i = blockDim.x * blockIdx.x + threadIdx.x;
     uint64_t algn_idx = align_cnts[i];
+    std::cout << "test_stringset " << i << std::endl;
 
     if (i < end-beg+1)
     {
@@ -29,6 +30,7 @@ __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local
         {
             seqsh_str[algn_idx] = dfd_col_seq_gpu[l_col_idx];
             seqsv_str[algn_idx] = dfd_row_seq_gpu[l_row_idx];
+            std::cout << "test_stringset assigned " << i << " --->  " << seqsh_str[algn_idx]  << " and " << seqsv_str[algn_idx] <<  std::endl;
 
             lids[algn_idx] = i;
             // ++algn_idx;

@@ -370,14 +370,12 @@ void DistributedPairwiseRunner::run_batch(
 
 		char **seqsv_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
 		char **seqsh_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
-		char ** dfd_col_seq_gpu = (char**) malloc(sizeof(char*) * algn_cnts[numThreads]); //CHECK and OBTAIN
-		char ** dfd_row_seq_gpu = (char**) malloc(sizeof(char*) * algn_cnts[numThreads]);
-
+		
 		int len_col_seq = dfd->col_seq.length();
 		int len_row_seq = dfd->row_seq.length();
 		char ** dfd_col_seq_gpu = (char**) malloc(sizeof(char*) * len_col_seq; //CHECK and OBTAIN
 		char ** dfd_row_seq_gpu = (char**) malloc(sizeof(char*) * len_row_seq);
-		
+
 		for(int dfd_i = 0; dfd_i < len_col_seq; dfd_i++)
 			dfd_col_seq_gpu[dfd_i] = dfd->col_seq[dfd_i];
 		for(int dfd_i = 0; dfd_i < len_row_seq; dfd_i++)
