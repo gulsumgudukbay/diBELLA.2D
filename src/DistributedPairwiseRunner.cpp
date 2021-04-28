@@ -371,15 +371,15 @@ void DistributedPairwiseRunner::run_batch(
 		char **seqsv_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
 		char **seqsh_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
 		
-		int len_col_seq = (dfd->col_seq).length();
-		int len_row_seq = (dfd->row_seq).length();
+		int len_col_seq = (dfd->col_seqs).length();
+		int len_row_seq = (dfd->row_seqs).length();
 		char ** dfd_col_seq_gpu = (char**) malloc(sizeof(char*) * len_col_seq; //CHECK and OBTAIN
 		char ** dfd_row_seq_gpu = (char**) malloc(sizeof(char*) * len_row_seq);
 
 		for(int dfd_i = 0; dfd_i < len_col_seq; dfd_i++)
-			dfd_col_seq_gpu[dfd_i] = (dfd->col_seq)[dfd_i];
+			dfd_col_seq_gpu[dfd_i] = (dfd->col_seqs)[dfd_i];
 		for(int dfd_i = 0; dfd_i < len_row_seq; dfd_i++)
-			dfd_row_seq_gpu[dfd_i] = (dfd->row_seq)[dfd_i];	
+			dfd_row_seq_gpu[dfd_i] = (dfd->row_seqs)[dfd_i];	
 
 		//cuda call for fillStringset goes here
 		//fillStringSetCuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
