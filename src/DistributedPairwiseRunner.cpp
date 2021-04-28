@@ -9,7 +9,7 @@
 #include "../kernels/allocate_stringset.cuh"
 #include <atomic> // std::atomic, std::atomic_flag, ATOMIC_FLAG_INIT
 #include <iostream>
-#include <string)
+#include <string>
 
 DistributedPairwiseRunner::DistributedPairwiseRunner(
 	const std::shared_ptr<DistributedFastaData> dfd,
