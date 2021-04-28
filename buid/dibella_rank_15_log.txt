@@ -1,0 +1,8 @@
+Local nnz count: 299410
+calling aligner for batch idx 0 cur #algnments 16564 overall 16564
+processing batch of size 16564 with 1 threads 
+calling aligner for batch idx 1 cur #algnments 49311 overall 65875
+processing batch of size 49311 with 1 threads 
+calling aligner for batch idx 2 cur #algnments 81718 overall 147593
+processing batch of size 81718 with 1 threads 
+#alignments run 147593

@@ -256,21 +256,21 @@ DistributedPairwiseRunner::run_batch
 	uint64_t *algn_cnts   = new uint64_t[numThreads + 1];
 	uint64_t nelims_ckthr = 0; // nelims_alnthr = 0, nelims_both = 0;
 
+	int* mattuples0 = (int*)malloc(sizeof(int)*local_nnz_count);
+	int* mattuples1 = (int*)malloc(sizeof(int)*local_nnz_count);
+	int* cks_count = (int*)malloc(sizeof(int)*local_nnz_count);
+    int * align_batch = (int*)malloc(sizeof(int)*batch_cnt);
+	int * elimi_batch = (int*)malloc(sizeof(int)*batch_cnt);
+	memset(align_batch, 0, sizeof(*align_batch) * batch_cnt);
+    memset(elimi_batch, 0, sizeof(*elimi_batch) * batch_cnt);
 
-     uint64_t* mattuples0 = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
-	 uint64_t* mattuples1 = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
-	 uint64_t* cks_count = (uint64_t*)malloc(sizeof(uint64_t)*local_nnz_count);
-     uint64_t * align_batch = (uint64_t*)malloc(sizeof(uint64_t)*batch_cnt);
-	uint64_t * elimi_batch = (uint64_t*)malloc(sizeof(uint64_t)*batch_cnt);
-	 for(uint64_t i = 0; i<local_nnz_count;i++)
+	 for(int i = 0; i<local_nnz_count;i++)
 	 {
 		 mattuples0[i]=std::get<0>(mattuples[i]);
 		 mattuples1[i]=std::get<1>(mattuples[i]);
 		 cks_count[i] = std::get<2>(mattuples[i])->count;
 	 }
 
-//	test();
-	 /*! Print CUDA start time information */
 
    ticks_t ts_cuda, te_cuda;
    ts_cuda = std::chrono::system_clock::now();
@@ -280,17 +280,24 @@ DistributedPairwiseRunner::run_batch
 
    te_cuda = std::chrono::system_clock::now();
 
-   std::string str = "\n CUDA timings:";
+   std::string str = "align_batch result\n";
+
+    for(int i=0;i<batch_cnt;i++)
+       str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
+	str.append("\n");
+
+    tu.print_str(str);
+
+    str = "\n CUDA timings:";
    str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
    tu.print_str(str);
 
-   ticks_t ts, te;
-   int t_total;
+
+  ticks_t ts_omp, te_omp;
+  ts_omp = std::chrono::system_clock::now();
 	
-    ts = std::chrono::system_clock::now();
 	while (batch_idx < batch_cnt) 
 	{
-		
 		uint64_t beg = batch_idx * batch_size;
 		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 
@@ -301,7 +308,7 @@ DistributedPairwiseRunner::run_batch
 
 		memset(algn_cnts, 0, sizeof(*algn_cnts) * (numThreads + 1));
 
-		uint64_t nelims_ckthr_cur = 0;
+		int64_t nelims_ckthr_cur = 0;
 		
 		// Count number of alignments in this batch
 		#pragma omp parallel reduction(+:nelims_ckthr_cur)
@@ -344,8 +351,9 @@ DistributedPairwiseRunner::run_batch
 
 		nelims_ckthr += nelims_ckthr_cur;	
 
-		for (int i = 1; i < numThreads + 1; ++i) 
-			algn_cnts[i] += algn_cnts[i - 1];
+	
+
+		for (int i = 1; i < numThreads + 1; ++i) algn_cnts[i] += algn_cnts[i - 1];
 
 		nalignments += algn_cnts[numThreads];
 
@@ -354,9 +362,7 @@ DistributedPairwiseRunner::run_batch
 			++batch_idx;
 			continue;
 		}
-
-
-
+		
 		// allocate StringSet
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsh;
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsv;
@@ -373,7 +379,7 @@ DistributedPairwiseRunner::run_batch
 			tid = omp_get_thread_num();
 			#endif
 
-			uint64_t algn_idx = algn_cnts[tid];
+	        uint64_t algn_idx = algn_cnts[tid];
 
 			#pragma omp for schedule(static, 1000)
 			for (uint64_t i = beg; i < end; ++i)
@@ -399,9 +405,9 @@ DistributedPairwiseRunner::run_batch
 					++algn_idx;
 				}
 			}
-		}
+		   }
 
-		
+	  tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
 
 		// Function call to the aligner
 		lfs << "calling aligner for batch idx " << batch_idx
@@ -415,11 +421,10 @@ DistributedPairwiseRunner::run_batch
 		++batch_idx;
 	}
 
-    te = std::chrono::system_clock::now();
-	str = "\n cpu count alignment timings:";
-  	str.append(std::to_string((ms_t(te - ts)).count())).append(" ms\n");
-  	tu.print_str(str);
-
+    te_omp = std::chrono::system_clock::now();
+    str = "\n OMP timings:";
+   str.append(std::to_string((ms_t(te_omp - ts_omp)).count())).append(" ms\n");
+   tu.print_str(str);
 
 	if(noAlign) nalignments = 0;
 
