@@ -1,4 +1,3 @@
-#include "AllocateStringSet.cuh"
 #include <stdio.h>
 #include <iostream>
 #include <thrust/device_vector.h>
@@ -8,11 +7,11 @@
 #include <math.h>
 #include <string>
 #include <vector>
-
-__global__ void fillStringSetKernel(uint64_t beg, uint64_t end, uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, int* align_cnts)
+#include "allocate_stringset.cuh"
+__global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, uint64_t *mattuples1, uint64_t *mattuples2, uint64_t* mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
     uint64_t i = blockDim.x * blockIdx.x + threadIdx.x;
-    uint64_t algn_idx = algn_cnts[i];
+    uint64_t algn_idx = align_cnts[i];
 
     if (i < end-beg+1)
     {
@@ -37,13 +36,15 @@ __global__ void fillStringSetKernel(uint64_t beg, uint64_t end, uint64_t local_n
     }
 }
 
-void fillStringSetCuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, int* align_cnts)
+void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, uint64_t *mattuples1, uint64_t *mattuples2, uint64_t *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
     uint64_t *d_mattuples1 = NULL;
     uint64_t *d_mattuples2 = NULL;
     uint64_t *d_mattuples3 = NULL;
     char **d_seqsh_str = NULL;
     char **d_seqsv_str = NULL;
+    char ** d_dfd_row_seq_gpu = NULL;
+    char ** d_dfd_col_seq_gpu = NULL;
     uint64_t *d_lids = NULL;
     uint64_t no_len = end-beg; //CHECK
     uint64_t block_size = 1024;
@@ -55,26 +56,26 @@ void fillStringSetCuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char
     cudaMalloc((void **)&d_mattuples2, sizeof(uint64_t) * local_nnz_count);
     cudaMalloc((void **)&d_mattuples3, sizeof(uint64_t) * local_nnz_count);
 
-    cudaMalloc((void **)&d_seqsh_str, sizeof(char*)*algn_cnts[numThreads])
-    cudaMalloc((void **)&d_seqsv_str, sizeof(char*)*algn_cnts[numThreads])
-    cudaMalloc((void **)&d_lids, sizeof(char*)*algn_cnts[numThreads])
+    cudaMalloc((void **)&d_seqsh_str, sizeof(char*)*align_cnts[numThreads]);
+    cudaMalloc((void **)&d_seqsv_str, sizeof(char*)*align_cnts[numThreads]);
+    cudaMalloc((void **)&d_lids, sizeof(char*)*align_cnts[numThreads]);
 
-    cudaMalloc((void **)&d_dfd_col_seq_gpu, sizeof(char*)*algn_cnts[numThreads])
-    cudaMalloc((void **)&d_dfd_row_seq_gpu, sizeof(char*)*algn_cnts[numThreads])
+    cudaMalloc((void **)&d_dfd_col_seq_gpu, sizeof(char*)*align_cnts[numThreads]);
+    cudaMalloc((void **)&d_dfd_row_seq_gpu, sizeof(char*)*align_cnts[numThreads]);
 
     cudaMemcpy(d_mattuples1, mattuples1, sizeof(uint64_t) * local_nnz_count, cudaMemcpyHostToDevice);
     cudaMemcpy(d_mattuples2, mattuples2, sizeof(uint64_t) * local_nnz_count, cudaMemcpyHostToDevice);
     cudaMemcpy(d_mattuples3, mattuples3, sizeof(uint64_t) * local_nnz_count, cudaMemcpyHostToDevice);
 
-    cudaMemcpy(d_seqsh_str, seqsh_str, sizeof(char*)*algn_cnts[numThreads], cudaMemcpyHostToDevice);
-    cudaMemcpy(d_seqsv_str, seqsv_str, sizeof(char*)*algn_cnts[numThreads], cudaMemcpyHostToDevice);
-    cudaMemcpy(d_lids, lids, sizeof(char*)*algn_cnts[numThreads], cudaMemcpyHostToDevice);
+    cudaMemcpy(d_seqsh_str, seqsh_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyHostToDevice);
+    cudaMemcpy(d_seqsv_str, seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lids, lids, sizeof(char*)*align_cnts[numThreads], cudaMemcpyHostToDevice);
 
-    cudaMemcpy(d_dfd_col_seq_gpu, dfd_col_seq_gpu, sizeof(char*)*algn_cnts[numThreads], cudaMemcpyHostToDevice);
-    cudaMemcpy(d_dfd_row_seq_gpu, dfd_row_seq_gpu, sizeof(char*)*algn_cnts[numThreads], cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dfd_col_seq_gpu, dfd_col_seq_gpu, sizeof(char*)*align_cnts[numThreads], cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dfd_row_seq_gpu, dfd_row_seq_gpu, sizeof(char*)*align_cnts[numThreads], cudaMemcpyHostToDevice);
 
 
-    fillStringSetKernel<<<block_num, block_size>>>(beg, end, local_nnz_count, d_seqsh_str, d_seqsv_str, d_lids, d_mattuples1, d_mattuples2, d_mattuples3, row_offset, col_offset, ckthr, d_dfd_col_seq_gpu, d_dfd_row_seq_gpu, align_cnts)
+    fill_stringset_kernel<<<block_num, block_size>>>(beg, end, local_nnz_count, d_seqsh_str, d_seqsv_str, d_lids, d_mattuples1, d_mattuples2, d_mattuples3, row_offset, col_offset, ckthr, d_dfd_col_seq_gpu, d_dfd_row_seq_gpu, align_cnts);
 
     cudaFree(d_mattuples1);
     cudaFree(d_mattuples2);
@@ -87,8 +88,8 @@ void fillStringSetCuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char
 }
 
 
-void test()
+void test1()
 {
-
     std::cout << "test" << std::endl;
+
 }

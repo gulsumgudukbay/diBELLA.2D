@@ -28,7 +28,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fpermissive -w -O3 -DSEQAN_ENABLE_DEBUG
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(CUDA  REQUIRED)
-include_directories("/home/mdl/ypf5071/cuda-8.0/include")
+include_directories("/home/mdl/gxg5138/local-software/cuda-8.0/include")
 find_package(ZLIB)
 
 add_executable(dibella

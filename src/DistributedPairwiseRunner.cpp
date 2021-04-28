@@ -6,7 +6,7 @@
 
 #include "../include/DistributedPairwiseRunner.hpp"
 #include "../kernels/count_alignment.cuh"
-#include "../kernels/AllocateStringSet.cuh"
+#include "../kernels/allocate_stringset.cuh"
 #include <atomic> // std::atomic, std::atomic_flag, ATOMIC_FLAG_INIT
 #include <iostream>
 
@@ -370,8 +370,15 @@ void DistributedPairwiseRunner::run_batch(
 
 		char **seqsv_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
 		char **seqsh_gpu = (char **)malloc(sizeof(char *) * algn_cnts[numThreads]);
+		char ** dfd_col_seq_gpu = (char**) malloc(sizeof(char*) * algn_cnts[numThreads]); //CHECK and OBTAIN
+		char ** dfd_row_seq_gpu = (char**) malloc(sizeof(char*) * algn_cnts[numThreads]);
+
 
 		//cuda call for fillStringset goes here
+		//fillStringSetCuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
+		fill_stringset_cuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
+		test1();
+		//TODO: export seqsv_gpu and seqsh_gpu to seqsh and seqsv
 
 		// fill StringSet
 		#pragma omp parallel
