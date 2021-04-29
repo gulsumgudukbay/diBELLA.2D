@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cu
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/allocate_stringset.cu
 stdio.h
 -
 iostream
@@ -25,10 +25,24 @@ string
 -
 vector
 -
-count_alignment.cuh
-/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cuh
+allocate_stringset.cuh
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/allocate_stringset.cuh
 
-/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cuh
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/allocate_stringset.cuh
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+time.h
+-
+math.h
+-
+cuda.h
+-
+cuda_runtime_api.h
+-
 cuda_runtime.h
 /home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/cuda_runtime.h
 device_launch_parameters.h
