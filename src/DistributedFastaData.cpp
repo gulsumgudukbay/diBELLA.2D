@@ -601,9 +601,9 @@ DistributedFastaData::wait()
 
 	row_seqs.resize(rseq_cnt);
 	col_seqs.resize(cseq_cnt);
-	new char[
-  row_seqs_buffs = new char[rseq_cnt;
-  col_seqs_buffs = new char[cseq_cnt;
+
+  row_seqs_buffs = new char*[rseq_cnt;
+  col_seqs_buffs = new char*[cseq_cnt;
 
   tp->times["StartDfd:ExtractRecvSeqs"] = std::chrono::system_clock::now();
 	
