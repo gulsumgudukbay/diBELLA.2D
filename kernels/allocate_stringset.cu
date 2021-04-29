@@ -91,6 +91,6 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
 
 void test1()
 {
-    std::cout << "test" << std::endl;
+    std::cout << "test stringset" << std::endl;
 
 }

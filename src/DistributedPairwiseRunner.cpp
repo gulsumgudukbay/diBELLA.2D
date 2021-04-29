@@ -286,6 +286,7 @@ void DistributedPairwiseRunner::run_batch(
 	te_cuda = std::chrono::system_clock::now();
 
    std::string str = "align_batch result\n";
+   std::string str_ss = "align_batch result\n";
 
     for(int i=0;i<batch_cnt;i++)
        str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
@@ -298,9 +299,13 @@ void DistributedPairwiseRunner::run_batch(
    tu.print_str(str);
 
 
-  ticks_t ts_omp, te_omp;
+	ticks_t ts_omp, te_omp;
+	ticks_t ts_cuda_ss, te_cuda_ss, t_diff_ss;
+
+	t_diff_ss = 0;
   ts_omp = std::chrono::system_clock::now();
 	
+	int i_ss_batch = 0;
 	while (batch_idx < batch_cnt) 
 	{
 		uint64_t beg = batch_idx * batch_size;
@@ -393,10 +398,29 @@ void DistributedPairwiseRunner::run_batch(
 
 		//cuda call for fillStringset goes here
 		//fillStringSetCuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
+		ts_cuda_ss = std::chrono::system_clock::now();
 		fill_stringset_cuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
+
+		str_ss.append("Sequences for batch ");
+		str_ss.append(std::to_string(batch_idx));
+		str_ss.append(":\nHorizontals:\n");
+		for(int dfd_i = 0; dfd_i < local_nnz_count; dfd_i++)
+		{
+			str_ss.append(std::to_string(seqsh_gpu[dfd_i]);)
+		}
+		str_ss.append("\nVerticals:\n");
+
+		for(int dfd_i = 0; dfd_i < local_nnz_count; dfd_i++)
+		{
+			str_ss.append(std::to_string(seqsv_gpu[dfd_i]);)
+		}
+		str_ss.append("****************************************\n");
+
+		te_cuda_ss = std::chrono::system_clock::now();
+		t_diff_ss += te_cuda_ss - ts_cuda_ss;
 		test1();
 		//TODO: export seqsv_gpu and seqsh_gpu to seqsh and seqsv
-
+		i_ss_batch++;
 		// fill StringSet
 		#pragma omp parallel
 		{
@@ -451,6 +475,11 @@ void DistributedPairwiseRunner::run_batch(
     str = "\n OMP timings:";
    str.append(std::to_string((ms_t(te_omp - ts_omp)).count())).append(" ms\n");
    tu.print_str(str);
+
+   str_ss.append("Fill StringSet CUDA runtime: ");
+   str_ss.append(std::to_string((ms_t(t_diff_ss)).count())).append(" ms\n");
+
+
 
 	if (noAlign)
 		nalignments = 0;
