@@ -11,9 +11,10 @@
 __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int* mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
     uint64_t i = blockDim.x * blockIdx.x + threadIdx.x;
-    uint64_t algn_idx = align_cnts[i];
+    uint64_t algn_idx = align_cnts[0] + i;
 
     if (i < end-beg+1)
+    //if(i < algn_idx)
     {
         uint64_t l_row_idx = mattuples1[i];
         uint64_t l_col_idx = mattuples2[i];
@@ -27,9 +28,10 @@ __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local
             (l_col_idx >= l_row_idx) &&
             (l_col_idx != l_row_idx || g_col_idx > g_row_idx))
         {
-            seqsh_str[algn_idx] = dfd_col_seq_gpu[l_col_idx];
-            seqsv_str[algn_idx] = dfd_row_seq_gpu[l_row_idx];
-            printf( "test_stringset assigned %d --> %s and %s \n" , i, seqsh_str[algn_idx], seqsv_str[algn_idx]);
+            seqsh_str[i] = dfd_col_seq_gpu[l_col_idx];
+            seqsv_str[i] = dfd_row_seq_gpu[l_row_idx];
+            printf("HELO\n");
+	    //printf( "test_stringset assigned %d --> %s and %s \n" , i, seqsh_str[algn_idx], seqsv_str[algn_idx]);
 
             lids[algn_idx] = i;
             // ++algn_idx;
@@ -79,9 +81,9 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
     fill_stringset_kernel<<<block_num, block_size>>>(beg, end, local_nnz_count, d_seqsh_str, d_seqsv_str, d_lids, d_mattuples1, d_mattuples2, d_mattuples3, row_offset, col_offset, ckthr, d_dfd_col_seq_gpu, d_dfd_row_seq_gpu, align_cnts);
 
     cudaMemcpy(seqsh_str, d_seqsh_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
-    cudaMemcpy(seqsh_str, d_seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
+    cudaMemcpy(seqsv_str, d_seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
 
-
+    std::cout << "TESTINGGG " << seqsh_str[0] << std::endl;
     cudaFree(d_mattuples1);
     cudaFree(d_mattuples2);
     cudaFree(d_mattuples3);
