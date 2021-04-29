@@ -1,0 +1,8 @@
+# 216 "/home/mdl/gxg5138/local-software/installs/gcc_5.4.0/lib/gcc/x86_64-unknown-linux-gnu/5.4.0/include/stddef.h" 3
+typedef unsigned long size_t;
+#include "crt/device_runtime.h"
+# 196 "/home/mdl/gxg5138/local-software/cuda-8.0/bin/..//include/crt/device_runtime.h" 3
+___device__(extern  __no_sc__) __attribute__((__used__)) void *malloc(size_t __T10);
+# 197 "/home/mdl/gxg5138/local-software/cuda-8.0/bin/..//include/crt/device_runtime.h" 3
+___device__(extern  __no_sc__) __attribute__((__used__)) void free(void *__T11);
+#include "common_functions.h"

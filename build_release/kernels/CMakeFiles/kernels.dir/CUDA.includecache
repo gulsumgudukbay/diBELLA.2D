@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cu
+stdio.h
+-
+iostream
+-
+thrust/device_vector.h
+-
+fstream
+-
+sys/time.h
+-
+stdio.h
+-
+math.h
+-
+string
+-
+vector
+-
+count_alignment.cuh
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cuh
+
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/count_alignment.cuh
+cuda_runtime.h
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/cuda_runtime.h
+device_launch_parameters.h
+/home/mdl/gxg5138/bioinf/diBELLA.2D/kernels/device_launch_parameters.h
+

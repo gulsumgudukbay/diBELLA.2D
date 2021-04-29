@@ -43,16 +43,7 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
                     }
 				}
       }
-
-        if ((l_col_idx >= l_row_idx) &&
-            (l_col_idx != l_row_idx || g_col_idx > g_row_idx))
-        {
-            if (count < ckthr)
-            {
-                // atomicAdd(&elimi_batch[batch_idx],1);
-            }
-        }
-    }
+ 
 }
 
 void count_alignment_cuda(int batch_size, int local_nnz_count, int* mattuples0, int* mattuples1, int* cks_count,

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libkernels.a  CMakeFiles/kernels.dir/count_alignment.cu.o CMakeFiles/kernels.dir/allocate_stringset.cu.o
+/usr/bin/ranlib libkernels.a

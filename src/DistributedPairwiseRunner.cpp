@@ -276,15 +276,14 @@ void DistributedPairwiseRunner::run_batch(
 		 cks_count[i] = std::get<2>(mattuples[i])->count;
 	 }
 
+   	ticks_t ts_cuda, te_cuda;
+   	ts_cuda = std::chrono::system_clock::now();
+
 
 	count_alignment_cuda(batch_size, local_nnz_count, mattuples0, mattuples1, cks_count, col_offset, row_offset,
 						 ckthr, align_batch, elimi_batch);
 
 	te_cuda = std::chrono::system_clock::now();
-
-	std::string str = "\n CUDA timings:";
-	str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
-	tu.print_str(str);
 
    std::string str = "align_batch result\n";
 

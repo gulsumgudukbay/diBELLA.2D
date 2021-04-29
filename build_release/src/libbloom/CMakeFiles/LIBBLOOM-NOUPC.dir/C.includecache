@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/libbloom/murmur2/murmurhash2.h
+
+/home/mdl/gxg5138/bioinf/diBELLA.2D/src/libbloom/bloom.c
+fcntl.h
+-
+math.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+sys/stat.h
+-
+sys/types.h
+-
+unistd.h
+-
+bloom.h
+/home/mdl/gxg5138/bioinf/diBELLA.2D/src/libbloom/bloom.h
+murmurhash2.h
+/home/mdl/gxg5138/bioinf/diBELLA.2D/src/libbloom/murmurhash2.h
+
+/home/mdl/gxg5138/bioinf/diBELLA.2D/src/libbloom/bloom.h
+
