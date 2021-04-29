@@ -408,13 +408,13 @@ void DistributedPairwiseRunner::run_batch(
 		str_ss.append(":\nHorizontals:\n");
 		for(int dfd_i = 0; dfd_i < algn_cnts[numThreads]; dfd_i++)
 		{
-			str_ss.append(seqsh_gpu[dfd_i]);
+			// str_ss.append(seqsh_gpu[dfd_i]);
 		}
 		str_ss.append("\nVerticals:\n");
 
 		for(int dfd_i = 0; dfd_i < algn_cnts[numThreads]; dfd_i++)
 		{
-			str_ss.append(seqsv_gpu[dfd_i]);
+			// str_ss.append(seqsv_gpu[dfd_i]);
 		}
 		str_ss.append("****************************************\n");
 
