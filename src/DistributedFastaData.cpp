@@ -40,6 +40,9 @@ DistributedFastaData::~DistributedFastaData() {
   delete (fd);
   delete[](l_seq_counts);
   delete[](g_seq_offsets);
+
+  free(col_seqs_buffs);
+  free(row_seqs_buffs);
 }
 
 DistributedFastaData::DistributedFastaData(
@@ -528,6 +531,7 @@ DistributedFastaData::push_seqs
 	std::vector<seqan::Dna5String*> &cur_seqs = (rc_flag == 1 ? row_seqs : col_seqs);
 	uint64_t seq_beg = (rc_flag == 1 ? rseq_beg : cseq_beg);
 
+  
 	#pragma omp parallel
 	{
 		ushort len;
@@ -545,6 +549,16 @@ DistributedFastaData::push_seqs
 			seqan::Dna5String *seq = new seqan::Dna5String(myseq);
 
 			cur_seqs[seq_beg + i] = seq;
+
+      if(rc_flag == 1)
+      {
+        row_seq_buffs[rseq_beg + i] = myseq.c_str();
+      }
+      else
+      {
+        col_seq_buffs[cseq_beg + i] = myseq.c_str();
+      }
+      
 		}
   }
 }
@@ -587,7 +601,10 @@ DistributedFastaData::wait()
 
 	row_seqs.resize(rseq_cnt);
 	col_seqs.resize(cseq_cnt);
-	  
+	
+  row_seqs_buffs = (char **)malloc(sizeof(char *) * rseq_cnt);
+  col_seqs_buffs = (char **)malloc(sizeof(char *) * cseq_cnt);
+
   tp->times["StartDfd:ExtractRecvSeqs"] = std::chrono::system_clock::now();
 	
   int recv_nbr_idx = 0;
@@ -650,6 +667,12 @@ DistributedFastaData::wait()
 		 * at this point */
 		assert(col_seqs.empty());
 		col_seqs.assign(row_seqs.begin(), row_seqs.end());
+    free(col_seqs_buffs);
+
+    col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.length());
+
+    for(int i = 0; i < row_seqs.length(); i++)
+      col_seqs_buffs[i] = row_seqs_buffs[i];
 	}
 
 	assert(row_seqs.size() == (row_seq_end_idx - row_seq_start_idx) + 1 &&
