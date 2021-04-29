@@ -51,7 +51,7 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
     uint64_t block_size = 1024;
     uint64_t block_num = (no_len / block_size) + 1;
 
-    uint64_t numThreads = 1000;
+    uint64_t numThreads = 1;
 
     cudaMalloc((void **)&d_mattuples1, sizeof(int) * local_nnz_count);
     cudaMalloc((void **)&d_mattuples2, sizeof(int) * local_nnz_count);
