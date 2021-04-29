@@ -39,9 +39,9 @@ __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local
 
 void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
-    uint64_t *d_mattuples1 = NULL;
-    uint64_t *d_mattuples2 = NULL;
-    uint64_t *d_mattuples3 = NULL;
+    int *d_mattuples1 = NULL;
+    int *d_mattuples2 = NULL;
+    int *d_mattuples3 = NULL;
     char **d_seqsh_str = NULL;
     char **d_seqsv_str = NULL;
     char ** d_dfd_row_seq_gpu = NULL;
@@ -53,9 +53,9 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
 
     uint64_t numThreads = 1000;
 
-    cudaMalloc((void **)&d_mattuples1, sizeof(uint64_t) * local_nnz_count);
-    cudaMalloc((void **)&d_mattuples2, sizeof(uint64_t) * local_nnz_count);
-    cudaMalloc((void **)&d_mattuples3, sizeof(uint64_t) * local_nnz_count);
+    cudaMalloc((void **)&d_mattuples1, sizeof(int) * local_nnz_count);
+    cudaMalloc((void **)&d_mattuples2, sizeof(int) * local_nnz_count);
+    cudaMalloc((void **)&d_mattuples3, sizeof(int) * local_nnz_count);
 
     cudaMalloc((void **)&d_seqsh_str, sizeof(char*)*align_cnts[numThreads]);
     cudaMalloc((void **)&d_seqsv_str, sizeof(char*)*align_cnts[numThreads]);
