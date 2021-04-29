@@ -553,10 +553,13 @@ DistributedFastaData::push_seqs
       if(rc_flag == 1)
       {
         row_seqs_buffs[rseq_beg + i] = myseq.c_str();
+        std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << row_seqs_buffs[rseq_beg+i] << std::endl;
+
       }
       else
       {
         col_seqs_buffs[cseq_beg + i] = myseq.c_str();
+        std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << col_seqs_buffs[cseq_beg+i] << std::endl;
       }
       
 		}
@@ -673,6 +676,7 @@ DistributedFastaData::wait()
 
     for(int i = 0; i < row_seqs.size(); i++)
       col_seqs_buffs[i] = row_seqs_buffs[i];
+      std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
 	}
 
 	assert(row_seqs.size() == (row_seq_end_idx - row_seq_start_idx) + 1 &&
