@@ -286,7 +286,7 @@ void DistributedPairwiseRunner::run_batch(
 	te_cuda = std::chrono::system_clock::now();
 
    std::string str = "align_batch result\n";
-   std::string str_ss = "align_batch result\n";
+   std::string str_ss = "Fill Stringset result\n";
 
     for(int i=0;i<batch_cnt;i++)
        str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
@@ -298,7 +298,7 @@ void DistributedPairwiseRunner::run_batch(
    str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
    tu.print_str(str);
 
-	tu.print_str(str_ss);
+	// tu.print_str(str_ss);
 	ticks_t ts_omp, te_omp;
 	ticks_t ts_cuda_ss, te_cuda_ss;
 	int t_diff_ss;
@@ -401,7 +401,7 @@ void DistributedPairwiseRunner::run_batch(
 		ts_cuda_ss = std::chrono::system_clock::now();
 		fill_stringset_cuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
 		te_cuda_ss = std::chrono::system_clock::now();
-                t_diff_ss += (ms_t(te_cuda_ss - ts_cuda_ss)).count();
+        // t_diff_ss += (ms_t(te_cuda_ss - ts_cuda_ss)).count();
 
 		str_ss.append("Sequences for batch ");
 		str_ss.append(std::to_string(batch_idx));
