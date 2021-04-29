@@ -401,22 +401,22 @@ void DistributedPairwiseRunner::run_batch(
 		ts_cuda_ss = std::chrono::system_clock::now();
 		fill_stringset_cuda(beg, end, local_nnz_count, seqsh_gpu, seqsv_gpu, lids, mattuples0, mattuples1, cks_count, row_offset, col_offset, ckthr, dfd_col_seq_gpu, dfd_row_seq_gpu, algn_cnts);
 		te_cuda_ss = std::chrono::system_clock::now();
-        // t_diff_ss += (ms_t(te_cuda_ss - ts_cuda_ss)).count();
+        t_diff_ss += (ms_t(te_cuda_ss - ts_cuda_ss)).count();
 
-		// str_ss.append("Sequences for batch ");
-		// str_ss.append(std::to_string(batch_idx));
-		// str_ss.append(":\nHorizontals:\n");
-		// for(int dfd_i = 0; dfd_i < local_nnz_count; dfd_i++)
-		// {
-		// 	str_ss.append(seqsh_gpu[dfd_i]);
-		// }
-		// str_ss.append("\nVerticals:\n");
+		str_ss.append("Sequences for batch ");
+		str_ss.append(std::to_string(batch_idx));
+		str_ss.append(":\nHorizontals:\n");
+		for(int dfd_i = 0; dfd_i < algn_cnts[numThreads]; dfd_i++)
+		{
+			str_ss.append(seqsh_gpu[dfd_i]);
+		}
+		str_ss.append("\nVerticals:\n");
 
-		// for(int dfd_i = 0; dfd_i < local_nnz_count; dfd_i++)
-		// {
-		// 	str_ss.append(seqsv_gpu[dfd_i]);
-		// }
-		// str_ss.append("****************************************\n");
+		for(int dfd_i = 0; dfd_i < algn_cnts[numThreads]; dfd_i++)
+		{
+			str_ss.append(seqsv_gpu[dfd_i]);
+		}
+		str_ss.append("****************************************\n");
 
 
 		test1();
