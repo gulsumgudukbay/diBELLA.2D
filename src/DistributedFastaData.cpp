@@ -552,11 +552,11 @@ DistributedFastaData::push_seqs
 
       if(rc_flag == 1)
       {
-        row_seq_buffs[rseq_beg + i] = myseq.c_str();
+        row_seqs_buffs[rseq_beg + i] = myseq.c_str();
       }
       else
       {
-        col_seq_buffs[cseq_beg + i] = myseq.c_str();
+        col_seqs_buffs[cseq_beg + i] = myseq.c_str();
       }
       
 		}
@@ -669,9 +669,9 @@ DistributedFastaData::wait()
 		col_seqs.assign(row_seqs.begin(), row_seqs.end());
     free(col_seqs_buffs);
 
-    col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.length());
+    col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.size());
 
-    for(int i = 0; i < row_seqs.length(); i++)
+    for(int i = 0; i < row_seqs.size(); i++)
       col_seqs_buffs[i] = row_seqs_buffs[i];
 	}
 
