@@ -78,8 +78,8 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
 
     fill_stringset_kernel<<<block_num, block_size>>>(beg, end, local_nnz_count, d_seqsh_str, d_seqsv_str, d_lids, d_mattuples1, d_mattuples2, d_mattuples3, row_offset, col_offset, ckthr, d_dfd_col_seq_gpu, d_dfd_row_seq_gpu, align_cnts);
 
-    cudaMemcpy(d_seqsh_str, seqsh_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
-    cudaMemcpy(d_seqsh_str, seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
+    cudaMemcpy(seqsh_str, d_seqsh_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
+    cudaMemcpy(seqsh_str, d_seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
 
 
     cudaFree(d_mattuples1);
