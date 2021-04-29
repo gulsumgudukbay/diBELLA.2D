@@ -605,8 +605,8 @@ DistributedFastaData::wait()
 	row_seqs.resize(rseq_cnt);
 	col_seqs.resize(cseq_cnt);
 
-  row_seqs_buffs = new char*[rseq_cnt];
-  col_seqs_buffs = new char*[cseq_cnt];
+  row_seqs_buffs = malloc(rseq_cnt*sizeof(char*));
+  col_seqs_buffs = malloc(cseq_cnt*sizeof(char*));
 
   tp->times["StartDfd:ExtractRecvSeqs"] = std::chrono::system_clock::now();
 	
@@ -674,9 +674,10 @@ DistributedFastaData::wait()
 
     col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.size());
 
-    for(int i = 0; i < row_seqs.size(); i++)
+    for(int i = 0; i < row_seqs.size(); i++){
       col_seqs_buffs[i] = row_seqs_buffs[i];
       std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
+    }
 	}
 
 	assert(row_seqs.size() == (row_seq_end_idx - row_seq_start_idx) + 1 &&
