@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include "allocate_stringset.cuh"
-__global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, uint64_t *mattuples1, uint64_t *mattuples2, uint64_t* mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
+__global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int* mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
     uint64_t i = blockDim.x * blockIdx.x + threadIdx.x;
     uint64_t algn_idx = align_cnts[i];
@@ -37,7 +37,7 @@ __global__ void fill_stringset_kernel(uint64_t beg, uint64_t end, uint64_t local
     }
 }
 
-void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, uint64_t *mattuples1, uint64_t *mattuples2, uint64_t *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
+void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, char **seqsh_str, char **seqsv_str, uint64_t *lids, int *mattuples1, int *mattuples2, int *mattuples3, uint64_t row_offset, uint64_t col_offset, int ckthr, char **dfd_col_seq_gpu, char **dfd_row_seq_gpu, uint64_t* align_cnts)
 {
     uint64_t *d_mattuples1 = NULL;
     uint64_t *d_mattuples2 = NULL;
