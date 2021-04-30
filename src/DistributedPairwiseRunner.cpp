@@ -476,6 +476,16 @@ void DistributedPairwiseRunner::run_batch(
 		   }
 		te_ss = std::chrono::system_clock::now();
 		t_diff_ss_cpu += (ms_t(te_ss - ts_ss)).count();
+	runtimes.append("Count Alignments CPU: ").append(std::to_string(t_diff_ca_cpu));
+	runtimes.append(" ms\n");
+	runtimes.append("Count Alignments GPU: ");
+   	runtimes.append(std::to_string((ms_t(te_cuda - ts_cuda)).count()));
+	runtimes.append(" ms\n");
+	runtimes.append("Fill StringSet CPU: ").append(std::to_string((ms_t(te_ss - ts_ss)).count()));
+	runtimes.append(" ms\n");
+	runtimes.append("Fill StringSet GPU: ").append(std::to_string((ms_t(te_cuda_ss - ts_cuda_ss)).count()));
+	runtimes.append(" ms\n");
+	tu.print_str(runtimes);
 
 	  tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
 

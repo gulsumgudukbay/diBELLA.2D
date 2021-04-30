@@ -83,7 +83,7 @@ void fill_stringset_cuda(uint64_t beg, uint64_t end,uint64_t local_nnz_count, ch
     cudaMemcpy(seqsh_str, d_seqsh_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
     cudaMemcpy(seqsv_str, d_seqsv_str, sizeof(char*)*align_cnts[numThreads], cudaMemcpyDeviceToHost);
 
-    std::cout << "TESTINGGG " << seqsh_str[0] << std::endl;
+    // std::cout << "TESTINGGG " << seqsh_str[0] << std::endl;
     cudaFree(d_mattuples1);
     cudaFree(d_mattuples2);
     cudaFree(d_mattuples3);
