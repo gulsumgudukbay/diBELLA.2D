@@ -52,8 +52,6 @@ DistributedFastaData::~DistributedFastaData() {
 DistributedFastaData::DistributedFastaData(
   const char *file, const char* idx_map_file,
   uint64_t overlap, ushort k,
-  row_seq_buffs_len = 0;
-  col_seq_buffs_len = 0;
 
   const std::shared_ptr<ParallelOps> &parops,
   const std::shared_ptr<TimePod> &tp, TraceUtils tu)
@@ -84,6 +82,8 @@ DistributedFastaData::DistributedFastaData(
     TraceUtils::print_msg(title, msg, parops);
   }
 #endif
+  row_seq_buffs_len = 0;
+  col_seq_buffs_len = 0;
 
   l_seq_counts = new uint64_t[parops->world_procs_count];
   MPI_Allgather(&l_seq_count, 1, MPI_UINT64_T, l_seq_counts,
@@ -563,7 +563,7 @@ DistributedFastaData::push_seqs
         for(int k = 0; k < len; k++)
           row_seqs_buffs[rseq_beg + i][k] = myseq[k];
         row_seqs_buffs[rseq_beg + i][len] = '\0';
-        std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << row_seqs_buffs[rseq_beg+i] << std::endl;
+        //std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << row_seqs_buffs[rseq_beg+i] << std::endl;
 
       }
       else
@@ -573,7 +573,7 @@ DistributedFastaData::push_seqs
         for(int k = 0; k < len; k++)
           col_seqs_buffs[cseq_beg + i][k] = myseq[k];
         col_seqs_buffs[cseq_beg + i][len] = '\0';
-        std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << col_seqs_buffs[cseq_beg+i] << std::endl;
+        //std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << col_seqs_buffs[cseq_beg+i] << std::endl;
       }
       
 		}
@@ -686,22 +686,33 @@ DistributedFastaData::wait()
 		 * at this point */
 		assert(col_seqs.empty());
 		col_seqs.assign(row_seqs.begin(), row_seqs.end());
-    for(int i = 0; i < col_seqs.size(); i++){
+    for(int i = 0; i < col_seq_buffs_len; i++){
         free(col_seqs_buffs[i]);
     }
     free(col_seqs_buffs);
-
+	
     col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.size());
+    std::cout << "got col_seq_buffs_len " << row_seqs.size() << std::endl;
     col_seq_buffs_len = row_seqs.size();
+    
     for(int i = 0; i < row_seqs.size(); i++)
     {
-        int row_seq_len = length(row_seqs[i]);
+        char* ptr = row_seqs_buffs[i];
+	int row_seq_len = 0;
+	int offset = 0;
+	while(*(ptr + offset) != '\0')
+	{
+	    ++row_seq_len;
+	    ++offset;
+	}
+
+	//std::cout << "hiiii " << row_seq_len << std::endl;
         col_seqs_buffs[i] = (char*) malloc(row_seq_len+1);
 
         for(int k = 0; k < row_seq_len; k++)
           col_seqs_buffs[i][k] = row_seqs_buffs[i][k];
         col_seqs_buffs[i][row_seq_len] = '\0';
-        std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
+        //std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
    
     }
 	}

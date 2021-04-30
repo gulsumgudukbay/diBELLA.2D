@@ -381,7 +381,7 @@ void DistributedPairwiseRunner::run_batch(
 			continue;
 		}
 		te_ca = std::chrono::system_clock::now();
-		t_diff_ca_cpu = (ms_t(te_ca - ts_ca)).count();
+		t_diff_ca_cpu += (ms_t(te_ca - ts_ca)).count();
 
 		// allocate StringSet
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsh;
@@ -402,7 +402,7 @@ void DistributedPairwiseRunner::run_batch(
 		for(int dfd_i = 0; dfd_i < len_col_seq; dfd_i++)
 		{
 			dfd_col_seq_gpu[dfd_i] = (dfd->col_seqs_buffs)[dfd_i];
-			str_ss.append((dfd->col_seqs_buffs)[dfd_i]).append(", ");
+			//str_ss.append((dfd->col_seqs_buffs)[dfd_i]).append(", ");
 		}
 		str_ss.append("\n");
 
@@ -475,7 +475,7 @@ void DistributedPairwiseRunner::run_batch(
 			}
 		   }
 		te_ss = std::chrono::system_clock::now();
-		t_diff_ss_cpu = (ms_t(te_ss - ts_ss)).count();
+		t_diff_ss_cpu += (ms_t(te_ss - ts_ss)).count();
 
 	  tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
 
@@ -502,7 +502,7 @@ void DistributedPairwiseRunner::run_batch(
 
 	runtimes.append("Count Alignments CPU: ").append(std::to_string(t_diff_ca_cpu));
 	runtimes.append(" ms\n");
-	runtimes.append("Count Alignments GPU: ")
+	runtimes.append("Count Alignments GPU: ");
    	runtimes.append(std::to_string((ms_t(te_cuda - ts_cuda)).count()));
 	runtimes.append(" ms\n");
 	runtimes.append("Fill StringSet CPU: ").append(std::to_string(t_diff_ss_cpu));
