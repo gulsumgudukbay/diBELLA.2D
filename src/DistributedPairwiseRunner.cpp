@@ -313,6 +313,7 @@ void DistributedPairwiseRunner::run_batch(
 	int i_ss_batch = 0;
 	while (batch_idx < batch_cnt) 
 	{
+		runtimes = "";
 		uint64_t beg = batch_idx * batch_size;
 		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 

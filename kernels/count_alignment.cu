@@ -32,6 +32,7 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
 					(l_col_idx != l_row_idx  || g_col_idx > g_row_idx))
 				{
 					atomicAdd(&align_batch[batch_idx],1);
+					//align_batch[batch_idx]++;
 				}
 
 				if ((l_col_idx >= l_row_idx) &&
@@ -40,6 +41,7 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
 					if (count < ckthr) 
                     {
                       atomicAdd(&elimi_batch[batch_idx],1);
+			//elimi_batch[batch_idx]++;
                     }
 				}
       }
