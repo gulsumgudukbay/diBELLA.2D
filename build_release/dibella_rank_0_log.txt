@@ -7,4 +7,3 @@ calling aligner for batch idx 2 cur #algnments 77080 overall 138527
 processing batch of size 77080 with 1 threads 
 calling aligner for batch idx 3 cur #algnments 19661 overall 158188
 processing batch of size 19661 with 1 threads 
-#alignments run 158188
