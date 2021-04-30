@@ -287,6 +287,7 @@ void DistributedPairwiseRunner::run_batch(
 
    std::string str = "align_batch result\n";
    std::string str_ss = "Fill Stringset result\n";
+   std::string runtimes = "Runtimes: \n";
 
     for(int i=0;i<batch_cnt;i++)
        str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
@@ -301,8 +302,12 @@ void DistributedPairwiseRunner::run_batch(
 	// tu.print_str(str_ss);
 	ticks_t ts_omp, te_omp;
 	ticks_t ts_cuda_ss, te_cuda_ss;
+	ticks_t ts_ca, te_ca;
+	ticks_t ts_ss, te_ss;
 	int t_diff_ss;
 	t_diff_ss = 0;
+	int t_diff_ca_cpu = 0;
+	int t_diff_ss_cpu = 0;
   ts_omp = std::chrono::system_clock::now();
 	
 	int i_ss_batch = 0;
@@ -321,6 +326,7 @@ void DistributedPairwiseRunner::run_batch(
 		int64_t nelims_ckthr_cur = 0;
 		
 		// Count number of alignments in this batch
+		ts_ca = std::chrono::system_clock::now();
 		#pragma omp parallel reduction(+ \
 							   : nelims_ckthr_cur)
 		{
@@ -374,7 +380,9 @@ void DistributedPairwiseRunner::run_batch(
 			++batch_idx;
 			continue;
 		}
-		
+		te_ca = std::chrono::system_clock::now();
+		t_diff_ca_cpu = (ms_t(te_ca - ts_ca)).count();
+
 		// allocate StringSet
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsh;
 		seqan::StringSet<seqan::Gaps<seqan::Dna5String>> seqsv;
@@ -396,7 +404,7 @@ void DistributedPairwiseRunner::run_batch(
 			dfd_col_seq_gpu[dfd_i] = (dfd->col_seqs_buffs)[dfd_i];
 			str_ss.append((dfd->col_seqs_buffs)[dfd_i]).append(", ");
 		}
-				str_ss.append("\n");
+		str_ss.append("\n");
 
 		for(int dfd_i = 0; dfd_i < len_row_seq; dfd_i++)
 			dfd_row_seq_gpu[dfd_i] = (dfd->row_seqs_buffs)[dfd_i];
@@ -431,6 +439,7 @@ void DistributedPairwiseRunner::run_batch(
 		//TODO: export seqsv_gpu and seqsh_gpu to seqsh and seqsv
 		i_ss_batch++;
 		// fill StringSet
+		ts_ss = std::chrono::system_clock::now();
 		#pragma omp parallel
 		{
 			int tid = 0;
@@ -465,6 +474,8 @@ void DistributedPairwiseRunner::run_batch(
 				}
 			}
 		   }
+		te_ss = std::chrono::system_clock::now();
+		t_diff_ss_cpu = (ms_t(te_ss - ts_ss)).count();
 
 	  tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
 
@@ -489,7 +500,16 @@ void DistributedPairwiseRunner::run_batch(
    str_ss.append(std::to_string(t_diff_ss)).append(" ms\n");
    tu.print_str(str_ss);
 
-
+	runtimes.append("Count Alignments CPU: ").append(std::to_string(t_diff_ca_cpu));
+	runtimes.append(" ms\n");
+	runtimes.append("Count Alignments GPU: ")
+   	runtimes.append(std::to_string((ms_t(te_cuda - ts_cuda)).count()));
+	runtimes.append(" ms\n");
+	runtimes.append("Fill StringSet CPU: ").append(std::to_string(t_diff_ss_cpu));
+	runtimes.append(" ms\n");
+	runtimes.append("Fill StringSet GPU: ").append(std::to_string(t_diff_ss));
+	runtimes.append(" ms\n");
+	tu.print_str(runtimes);
 
 	if (noAlign)
 		nalignments = 0;

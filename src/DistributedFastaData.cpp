@@ -41,6 +41,10 @@ DistributedFastaData::~DistributedFastaData() {
   delete[](l_seq_counts);
   delete[](g_seq_offsets);
 
+  for(int i = 0; i < col_seq_buffs_len; i++)
+    free(col_seqs_buffs[i]);
+  for(int i = 0; i < row_seq_buffs_len; i++)
+    free(row_seqs_buffs[i]);
   free(col_seqs_buffs);
   free(row_seqs_buffs);
 }
@@ -48,6 +52,9 @@ DistributedFastaData::~DistributedFastaData() {
 DistributedFastaData::DistributedFastaData(
   const char *file, const char* idx_map_file,
   uint64_t overlap, ushort k,
+  row_seq_buffs_len = 0;
+  col_seq_buffs_len = 0;
+
   const std::shared_ptr<ParallelOps> &parops,
   const std::shared_ptr<TimePod> &tp, TraceUtils tu)
   : overlap(overlap), k(k), parops(parops), tp(tp), tu(tu) {
@@ -552,13 +559,20 @@ DistributedFastaData::push_seqs
 
       if(rc_flag == 1)
       {
-        row_seqs_buffs[rseq_beg + i] = myseq.c_str();
+        row_seqs_buffs[rseq_beg + i] = (char*) malloc(len+1);
+        for(int k = 0; k < len; k++)
+          row_seqs_buffs[rseq_beg + i][k] = myseq[k];
+        row_seqs_buffs[rseq_beg + i][len] = '\0';
         std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << row_seqs_buffs[rseq_beg+i] << std::endl;
 
       }
       else
       {
-        col_seqs_buffs[cseq_beg + i] = myseq.c_str();
+        col_seqs_buffs[cseq_beg + i] = (char*) malloc(len+1);
+
+        for(int k = 0; k < len; k++)
+          col_seqs_buffs[cseq_beg + i][k] = myseq[k];
+        col_seqs_buffs[cseq_beg + i][len] = '\0';
         std::cout << "HELOOOOOOOOOOOOOOOOOOOOOOOOOOO " << col_seqs_buffs[cseq_beg+i] << std::endl;
       }
       
@@ -604,9 +618,11 @@ DistributedFastaData::wait()
 
 	row_seqs.resize(rseq_cnt);
 	col_seqs.resize(cseq_cnt);
+  row_seq_buffs_len = rseq_cnt;
+  col_seq_buffs_len = cseq_cnt;
 
-  row_seqs_buffs = malloc(rseq_cnt*sizeof(char*));
-  col_seqs_buffs = malloc(cseq_cnt*sizeof(char*));
+  row_seqs_buffs = (char**)malloc(rseq_cnt*sizeof(char*));
+  col_seqs_buffs = (char**)malloc(cseq_cnt*sizeof(char*));
 
   tp->times["StartDfd:ExtractRecvSeqs"] = std::chrono::system_clock::now();
 	
@@ -670,13 +686,23 @@ DistributedFastaData::wait()
 		 * at this point */
 		assert(col_seqs.empty());
 		col_seqs.assign(row_seqs.begin(), row_seqs.end());
+    for(int i = 0; i < col_seqs.size(); i++){
+        free(col_seqs_buffs[i]);
+    }
     free(col_seqs_buffs);
 
     col_seqs_buffs = (char **)malloc(sizeof(char *) * row_seqs.size());
+    col_seq_buffs_len = row_seqs.size();
+    for(int i = 0; i < row_seqs.size(); i++)
+    {
+        int row_seq_len = length(row_seqs[i]);
+        col_seqs_buffs[i] = (char*) malloc(row_seq_len+1);
 
-    for(int i = 0; i < row_seqs.size(); i++){
-      col_seqs_buffs[i] = row_seqs_buffs[i];
-      std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
+        for(int k = 0; k < row_seq_len; k++)
+          col_seqs_buffs[i][k] = row_seqs_buffs[i][k];
+        col_seqs_buffs[i][row_seq_len] = '\0';
+        std::cout << "HELOOOOOOOOOOO " << col_seqs_buffs[i] << std::endl;
+   
     }
 	}
 
