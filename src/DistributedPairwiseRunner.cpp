@@ -256,41 +256,46 @@ DistributedPairwiseRunner::run_batch
 	uint64_t *algn_cnts   = new uint64_t[numThreads + 1];
 	uint64_t nelims_ckthr = 0; // nelims_alnthr = 0, nelims_both = 0;
 
-	int* mattuples0 = (int*)malloc(sizeof(int)*local_nnz_count);
-	int* mattuples1 = (int*)malloc(sizeof(int)*local_nnz_count);
-	int* cks_count = (int*)malloc(sizeof(int)*local_nnz_count);
+	int* mattuples0 = (int*)malloc(sizeof(int)*100000);
+	int* mattuples1 = (int*)malloc(sizeof(int)*100000);
+	int* cks_count = (int*)malloc(sizeof(int)*100000);
     int * align_batch = (int*)malloc(sizeof(int)*batch_cnt);
 	int * elimi_batch = (int*)malloc(sizeof(int)*batch_cnt);
 	memset(align_batch, 0, sizeof(*align_batch) * batch_cnt);
     memset(elimi_batch, 0, sizeof(*elimi_batch) * batch_cnt);
 
-	 for(int i = 0; i<local_nnz_count;i++)
-	 {
-		 mattuples0[i]=std::get<0>(mattuples[i]);
-		 mattuples1[i]=std::get<1>(mattuples[i]);
-		 cks_count[i] = std::get<2>(mattuples[i])->count;
-	 }
 
-
+count_alignment_cuda(batch_size, 100000,mattuples0, mattuples1, cks_count,col_offset,row_offset,
+	ckthr, align_batch);
+	
    ticks_t ts_cuda, te_cuda;
-   ts_cuda = std::chrono::system_clock::now();
+    std::string str;
+   	while (batch_idx < batch_cnt) 
+	{
+		uint64_t beg = batch_idx * batch_size;
+		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
+	    int index=0;
+	for (uint64_t i = beg; i < end; ++i)
+	  { mattuples0[index]=std::get<0>(mattuples[i]);
+		 mattuples1[index]=std::get<1>(mattuples[i]);
+		 cks_count[index] = std::get<2>(mattuples[i])->count;
+		 index++;
+		 }
 
-    count_alignment_cuda(batch_size, local_nnz_count,mattuples0, mattuples1, cks_count,col_offset,row_offset,
-	ckthr, align_batch, elimi_batch);
+		 ts_cuda = std::chrono::system_clock::now();
 
-   te_cuda = std::chrono::system_clock::now();
+    count_alignment_cuda(batch_size, 100000,mattuples0, mattuples1, cks_count,col_offset,row_offset,
+	ckthr, align_batch);
+	   te_cuda = std::chrono::system_clock::now();
 
-   std::string str = "align_batch result\n";
-
-    for(int i=0;i<batch_cnt;i++)
-       str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
-	str.append("\n");
-
-    tu.print_str(str);
-
-    str = "\n CUDA timings:";
+  str = "\n cuda timings:";
    str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
    tu.print_str(str);
+
+	batch_idx++;
+	}
+
+
 
 
   ticks_t ts_omp, te_omp;
@@ -298,6 +303,7 @@ DistributedPairwiseRunner::run_batch
 	
 	while (batch_idx < batch_cnt) 
 	{
+		 ts_omp = std::chrono::system_clock::now();
 		uint64_t beg = batch_idx * batch_size;
 		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 
@@ -370,6 +376,11 @@ DistributedPairwiseRunner::run_batch
 		resize(seqsv, algn_cnts[numThreads], seqan::Exact{});
 
 		uint64_t *lids = new uint64_t[algn_cnts[numThreads]];
+
+		te_omp = std::chrono::system_clock::now();
+		str = "\n omp timings:";
+   		str.append(std::to_string((ms_t(te_omp - ts_omp)).count())).append(" ms\n");
+        tu.print_str(str);
 		
 		// fill StringSet
 		#pragma omp parallel
