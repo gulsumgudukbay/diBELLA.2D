@@ -11,7 +11,7 @@
 
 
 __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int* mattuples0, int* mattuples1, int* cks_count,
-    int col_offset, int row_offset, int ckthr, int* align_batch, int* elimi_batch)
+    int col_offset, int row_offset, int ckthr, int* align_batch)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     //  printf("%d, %d, %d\n", thread_id,read_idx[thread_id], has_events[thread_id]);
@@ -25,7 +25,7 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
         int g_row_idx = l_row_idx + row_offset;
         int count = cks_count[i];
 
-        assert(l_row_idx >= 0 && l_col_idx >= 0 && g_col_idx >= 0 && g_row_idx >= 0);
+ //       assert(l_row_idx >= 0 && l_col_idx >= 0 && g_col_idx >= 0 && g_row_idx >= 0);
 
 				if ((count >= ckthr) 	 	&& 
 					(l_col_idx >= l_row_idx) 	&&
@@ -34,20 +34,20 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
 					atomicAdd(&align_batch[batch_idx],1);
 				}
 
-				if ((l_col_idx >= l_row_idx) &&
+	/*			if ((l_col_idx >= l_row_idx) &&
 					(l_col_idx != l_row_idx || g_col_idx > g_row_idx))
 				{
 					if (count < ckthr) 
                     {
                       atomicAdd(&elimi_batch[batch_idx],1);
                     }
-				}
+				}*/
       }
 
 }
 
 void count_alignment_cuda(int batch_size, int local_nnz_count, int* mattuples0, int* mattuples1, int* cks_count,
-    int col_offset, int row_offset, int ckthr,int* align_batch, int* elimi_batch)
+    int col_offset, int row_offset, int ckthr,int* align_batch)
 {
     
     int batch_cnt = (local_nnz_count / batch_size) + 1;
@@ -63,28 +63,24 @@ void count_alignment_cuda(int batch_size, int local_nnz_count, int* mattuples0, 
     cudaMalloc((void **)&d_mattuples1, sizeof(int)*local_nnz_count);
     cudaMalloc((void **)&d_cks_count, sizeof(int)*local_nnz_count);
     cudaMalloc((void **)&d_align_batch, sizeof(int)*batch_cnt);
-    cudaMalloc((void **)&d_elimi_batch, sizeof(int)*batch_cnt);
+  // cudaMalloc((void **)&d_elimi_batch, sizeof(int)*batch_cnt);
 
     cudaMemcpy(d_mattuples0,mattuples0,sizeof(int)*local_nnz_count,cudaMemcpyHostToDevice);
     cudaMemcpy(d_mattuples1,mattuples1,sizeof(int)*local_nnz_count,cudaMemcpyHostToDevice);
     cudaMemcpy(d_cks_count,cks_count,sizeof(int)*local_nnz_count,cudaMemcpyHostToDevice);
     cudaMemcpy(d_align_batch,align_batch,sizeof(int)*batch_cnt,cudaMemcpyHostToDevice);
-    cudaMemcpy(d_elimi_batch,elimi_batch,sizeof(int)*batch_cnt,cudaMemcpyHostToDevice);
+   // cudaMemcpy(d_elimi_batch,elimi_batch,sizeof(int)*batch_cnt,cudaMemcpyHostToDevice);
 
-    int block_size = 1024;
+    int block_size = 512;
     int block_num = (local_nnz_count/block_size)+1;
     count_alignment_kernel<<<block_num, block_size>>>(batch_size, local_nnz_count, d_mattuples0, d_mattuples1, d_cks_count,
-        col_offset, row_offset, ckthr, d_align_batch, d_elimi_batch);
+        col_offset, row_offset, ckthr, d_align_batch);
 
     cudaMemcpy(align_batch,d_align_batch, sizeof(int)*batch_cnt, cudaMemcpyDeviceToHost);
 //    for(int i=0;i<batch_cnt;i++)
   //     std::cout<<"batch "<<i<<" align_batch"<<align_batch[i]<<std::endl;
 
-    cudaFree(d_mattuples0);
-    cudaFree(d_mattuples1);
-    cudaFree(d_cks_count);
-    cudaFree(d_align_batch);
-    cudaFree(d_elimi_batch);
+
    
 }
 
