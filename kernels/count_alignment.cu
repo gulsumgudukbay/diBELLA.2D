@@ -2,7 +2,7 @@
 #include <iostream>
 #include <thrust/device_vector.h>
 #include <fstream>
-#include <sys/time.h> 
+#include <sys/time.h>
 #include <stdio.h>
 #include <math.h>
 #include <string>
@@ -32,6 +32,7 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
 					(l_col_idx != l_row_idx  || g_col_idx > g_row_idx))
 				{
 					atomicAdd(&align_batch[batch_idx],1);
+					//align_batch[batch_idx]++;
 				}
 
 	/*			if ((l_col_idx >= l_row_idx) &&
@@ -40,10 +41,11 @@ __global__ void count_alignment_kernel(int batch_size, int local_nnz_count, int*
 					if (count < ckthr) 
                     {
                       atomicAdd(&elimi_batch[batch_idx],1);
+			//elimi_batch[batch_idx]++;
                     }
 				}*/
       }
-
+ 
 }
 
 void count_alignment_cuda(int batch_size, int local_nnz_count, int* mattuples0, int* mattuples1, int* cks_count,
@@ -74,14 +76,26 @@ void count_alignment_cuda(int batch_size, int local_nnz_count, int* mattuples0, 
     int block_size = 512;
     int block_num = (local_nnz_count/block_size)+1;
     count_alignment_kernel<<<block_num, block_size>>>(batch_size, local_nnz_count, d_mattuples0, d_mattuples1, d_cks_count,
+<<<<<<< HEAD
         col_offset, row_offset, ckthr, d_align_batch);
+=======
+                                                      col_offset, row_offset, ckthr, d_align_batch, d_elimi_batch);
+>>>>>>> e675383b7b4be13537ab4b835452eb74f40bc8e5
 
     cudaMemcpy(align_batch,d_align_batch, sizeof(int)*batch_cnt, cudaMemcpyDeviceToHost);
 //    for(int i=0;i<batch_cnt;i++)
   //     std::cout<<"batch "<<i<<" align_batch"<<align_batch[i]<<std::endl;
 
+<<<<<<< HEAD
 
    
+=======
+    cudaFree(d_mattuples0);
+    cudaFree(d_mattuples1);
+    cudaFree(d_cks_count);
+    cudaFree(d_align_batch);
+    cudaFree(d_elimi_batch);
+>>>>>>> e675383b7b4be13537ab4b835452eb74f40bc8e5
 }
 
 void test()

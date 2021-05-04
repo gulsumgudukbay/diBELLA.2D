@@ -87,9 +87,13 @@ private:
 
   std::vector<NbrData> my_nbrs;
 
+public:
   std::vector<seqan::Dna5String *> row_seqs;
   std::vector<seqan::Dna5String *> col_seqs;
-
+  char** row_seqs_buffs;
+  char** col_seqs_buffs;
+  int row_seq_buffs_len, col_seq_buffs_len;
+private:
   uint64_t row_seq_start_idx;
   uint64_t row_seq_end_idx;
   uint64_t col_seq_start_idx;
