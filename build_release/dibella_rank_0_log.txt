@@ -1,9 +1,62 @@
-Local nnz count: 320598
-calling aligner for batch idx 0 cur #algnments 15501 overall 15501
-processing batch of size 15501 with 1 threads 
-calling aligner for batch idx 1 cur #algnments 45946 overall 61447
-processing batch of size 45946 with 1 threads 
-calling aligner for batch idx 2 cur #algnments 77080 overall 138527
-processing batch of size 77080 with 1 threads 
-calling aligner for batch idx 3 cur #algnments 19661 overall 158188
-processing batch of size 19661 with 1 threads 
+Local nnz count: 2976306
+calling aligner for batch idx 0 cur #algnments 1659 overall 1659
+processing batch of size 1659 with 1 threads 
+calling aligner for batch idx 1 cur #algnments 5125 overall 6784
+processing batch of size 5125 with 1 threads 
+calling aligner for batch idx 2 cur #algnments 8259 overall 15043
+processing batch of size 8259 with 1 threads 
+calling aligner for batch idx 3 cur #algnments 11693 overall 26736
+processing batch of size 11693 with 1 threads 
+calling aligner for batch idx 4 cur #algnments 14923 overall 41659
+processing batch of size 14923 with 1 threads 
+calling aligner for batch idx 5 cur #algnments 18464 overall 60123
+processing batch of size 18464 with 1 threads 
+calling aligner for batch idx 6 cur #algnments 21778 overall 81901
+processing batch of size 21778 with 1 threads 
+calling aligner for batch idx 7 cur #algnments 24940 overall 106841
+processing batch of size 24940 with 1 threads 
+calling aligner for batch idx 8 cur #algnments 28352 overall 135193
+processing batch of size 28352 with 1 threads 
+calling aligner for batch idx 9 cur #algnments 31673 overall 166866
+processing batch of size 31673 with 1 threads 
+calling aligner for batch idx 10 cur #algnments 34807 overall 201673
+processing batch of size 34807 with 1 threads 
+calling aligner for batch idx 11 cur #algnments 38361 overall 240034
+processing batch of size 38361 with 1 threads 
+calling aligner for batch idx 12 cur #algnments 41942 overall 281976
+processing batch of size 41942 with 1 threads 
+calling aligner for batch idx 13 cur #algnments 45268 overall 327244
+processing batch of size 45268 with 1 threads 
+calling aligner for batch idx 14 cur #algnments 48180 overall 375424
+processing batch of size 48180 with 1 threads 
+calling aligner for batch idx 15 cur #algnments 51683 overall 427107
+processing batch of size 51683 with 1 threads 
+calling aligner for batch idx 16 cur #algnments 55000 overall 482107
+processing batch of size 55000 with 1 threads 
+calling aligner for batch idx 17 cur #algnments 58244 overall 540351
+processing batch of size 58244 with 1 threads 
+calling aligner for batch idx 18 cur #algnments 61419 overall 601770
+processing batch of size 61419 with 1 threads 
+calling aligner for batch idx 19 cur #algnments 65332 overall 667102
+processing batch of size 65332 with 1 threads 
+calling aligner for batch idx 20 cur #algnments 68114 overall 735216
+processing batch of size 68114 with 1 threads 
+calling aligner for batch idx 21 cur #algnments 71570 overall 806786
+processing batch of size 71570 with 1 threads 
+calling aligner for batch idx 22 cur #algnments 74980 overall 881766
+processing batch of size 74980 with 1 threads 
+calling aligner for batch idx 23 cur #algnments 78310 overall 960076
+processing batch of size 78310 with 1 threads 
+calling aligner for batch idx 24 cur #algnments 81973 overall 1042049
+processing batch of size 81973 with 1 threads 
+calling aligner for batch idx 25 cur #algnments 85051 overall 1127100
+processing batch of size 85051 with 1 threads 
+calling aligner for batch idx 26 cur #algnments 88402 overall 1215502
+processing batch of size 88402 with 1 threads 
+calling aligner for batch idx 27 cur #algnments 91653 overall 1307155
+processing batch of size 91653 with 1 threads 
+calling aligner for batch idx 28 cur #algnments 94929 overall 1402084
+processing batch of size 94929 with 1 threads 
+calling aligner for batch idx 29 cur #algnments 74645 overall 1476729
+processing batch of size 74645 with 1 threads 
+#alignments run 1476729
