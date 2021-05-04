@@ -269,6 +269,8 @@ void DistributedPairwiseRunner::run_batch(
 	memset(align_batch, 0, sizeof(*align_batch) * batch_cnt);
     memset(elimi_batch, 0, sizeof(*elimi_batch) * batch_cnt);
 
+	count_alignment_cuda(batch_size, 100000,mattuples0, mattuples1, cks_count,col_offset,row_offset,
+	ckthr, align_batch);
 	 for(int i = 0; i<local_nnz_count;i++)
 	 {
 		 mattuples0[i]=std::get<0>(mattuples[i]);
@@ -276,39 +278,40 @@ void DistributedPairwiseRunner::run_batch(
 		 cks_count[i] = std::get<2>(mattuples[i])->count;
 	 }
 
-   	ticks_t ts_cuda, te_cuda;
-   	ts_cuda = std::chrono::system_clock::now();
+   	// ticks_t ts_cuda, te_cuda;
+   	// ts_cuda = std::chrono::system_clock::now();
 
 
-	count_alignment_cuda(batch_size, local_nnz_count, mattuples0, mattuples1, cks_count, col_offset, row_offset,
-						 ckthr, align_batch, elimi_batch);
+	// count_alignment_cuda(batch_size, local_nnz_count, mattuples0, mattuples1, cks_count, col_offset, row_offset, ckthr, align_batch, elimi_batch);
 
-	te_cuda = std::chrono::system_clock::now();
+	// te_cuda = std::chrono::system_clock::now();
 
    std::string str = "align_batch result\n";
    std::string str_ss = "Fill Stringset result\n";
    std::string runtimes = "Runtimes: \n";
 
-    for(int i=0;i<batch_cnt;i++)
-       str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
-	str.append("\n");
+    // for(int i=0;i<batch_cnt;i++)
+    //    str.append("##batch ").append(std::to_string(i)).append(" align_batch ").append(std::to_string(align_batch[i])).append("\n");
+	// str.append("\n");
 
-    tu.print_str(str);
+    // tu.print_str(str);
 
-    str = "\n CUDA timings:";
-   str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
-   tu.print_str(str);
+//     str = "\n CUDA timings:";
+//    str.append(std::to_string((ms_t(te_cuda - ts_cuda)).count())).append(" ms\n");
+//    tu.print_str(str);
 
 	// tu.print_str(str_ss);
 	ticks_t ts_omp, te_omp;
 	ticks_t ts_cuda_ss, te_cuda_ss;
 	ticks_t ts_ca, te_ca;
 	ticks_t ts_ss, te_ss;
+	ticks_t ts_cuda, te_cuda;
+
 	int t_diff_ss;
 	t_diff_ss = 0;
 	int t_diff_ca_cpu = 0;
 	int t_diff_ss_cpu = 0;
-  ts_omp = std::chrono::system_clock::now();
+	ts_omp = std::chrono::system_clock::now();
 	
 	int i_ss_batch = 0;
 	while (batch_idx < batch_cnt) 
@@ -317,6 +320,18 @@ void DistributedPairwiseRunner::run_batch(
 		uint64_t beg = batch_idx * batch_size;
 		uint64_t end = ((batch_idx + 1) * batch_size > local_nnz_count) ? local_nnz_count : ((batch_idx + 1) * batch_size);
 
+ 		int index=0;
+		for (uint64_t i = beg; i < end; ++i)
+	  	{ 
+			mattuples0[index]=std::get<0>(mattuples[i]);
+			mattuples1[index]=std::get<1>(mattuples[i]);
+			cks_count[index] = std::get<2>(mattuples[i])->count;
+			index++;
+		}
+		ts_cuda = std::chrono::system_clock::now();
+		count_alignment_cuda(batch_size, 100000, mattuples0, mattuples1, cks_count, col_offset,row_offset, ckthr, align_batch);
+	    te_cuda = std::chrono::system_clock::now();
+		
 		tu.print_str("Batch idx " + std::to_string(batch_idx) + "/" +
 					 std::to_string(batch_cnt) + " [" +
 					 std::to_string(beg) + ", " +
@@ -477,18 +492,18 @@ void DistributedPairwiseRunner::run_batch(
 		   }
 		te_ss = std::chrono::system_clock::now();
 		t_diff_ss_cpu += (ms_t(te_ss - ts_ss)).count();
-	runtimes.append("Count Alignments CPU: ").append(std::to_string(t_diff_ca_cpu));
-	runtimes.append(" ms\n");
-	runtimes.append("Count Alignments GPU: ");
-   	runtimes.append(std::to_string((ms_t(te_cuda - ts_cuda)).count()));
-	runtimes.append(" ms\n");
-	runtimes.append("Fill StringSet CPU: ").append(std::to_string((ms_t(te_ss - ts_ss)).count()));
-	runtimes.append(" ms\n");
-	runtimes.append("Fill StringSet GPU: ").append(std::to_string((ms_t(te_cuda_ss - ts_cuda_ss)).count()));
-	runtimes.append(" ms\n");
-	tu.print_str(runtimes);
+		runtimes.append("Count Alignments CPU: ").append(std::to_string(t_diff_ca_cpu));
+		runtimes.append(" ms\n");
+		runtimes.append("Count Alignments GPU: ");
+		runtimes.append(std::to_string((ms_t(te_cuda - ts_cuda)).count()));
+		runtimes.append(" ms\n");
+		runtimes.append("Fill StringSet CPU: ").append(std::to_string((ms_t(te_ss - ts_ss)).count()));
+		runtimes.append(" ms\n");
+		runtimes.append("Fill StringSet GPU: ").append(std::to_string((ms_t(te_cuda_ss - ts_cuda_ss)).count()));
+		runtimes.append(" ms\n");
+		tu.print_str(runtimes);
 
-	  tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
+	  	tu.print_str("cur #alignments "+ std::to_string(algn_cnts[numThreads])+"\n");
 
 		// Function call to the aligner
 		lfs << "calling aligner for batch idx " << batch_idx
